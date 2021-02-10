@@ -32,7 +32,7 @@ def open_file():
 # Ciper operation
 def cipher(mode):
     newtext = ""
-    text = my_box.get(1.0, END)
+    text = my_box.get(1.0, END)[:-1]
     for x in text:
         cn = ord(x)
         if 32 <= cn <= 126:
