@@ -63,20 +63,19 @@ color1 = '#ffffff'
 color2 = '#000000'
 # Backround
 root.config(bg=color2, padx=10, pady=10)
-root.resizable(False, False)
+root.columnconfigure(0, weight=1)
+root.columnconfigure(1, weight=1)
+root.rowconfigure(1, weight=1)
 # Info bar
-info_bar = Label(root, bg=color2, fg=color1, text="Only printable characters allowed!", padx=20)
-info_bar.grid(row=1, column=2)
-# Left buttons
-btn_open = Button(root, text="Chose File", command=open_file).grid(row=1, column=0, sticky=(N,E,S,W))   
-btn_clear = Button(root, text="Clear", command=clear).grid(row=1, column=1, sticky=(N,E,S,W))
+info_bar = Label(root, bg=color1, fg=color2, text="Only printable characters allowed!")
+info_bar.grid(row=2, column=0, columnspan=2, sticky=(N,E,S,W))
+# Top buttons
+btn_encrypt = Button(root, text="Encrypt", command=encrypt).grid(row=0, column=0, sticky=(N,E,S,W))
+btn_decrypt = Button(root, text="Decrypt", command=decrypt).grid(row=0, column=1, sticky=(N,E,S,W))
 # Text box
 my_box = Text(root, width=60, height=20, padx=4, pady=4, font=("Lucida Console", 10), selectbackground=color2, undo=True, )
-my_box.grid(row=0, column=0, columnspan=5, pady=10)
+my_box.grid(row=1, column=0, columnspan=2, pady=10, sticky=(N,E,S,W))
 my_box.insert(1.0, 'Type in your secret message or\nclick the "Chose file" button to open a extenal file.')
-# Right buttons
-btn_encrypt = Button(root, text="Encrypt", command=encrypt).grid(row=1, column=3, sticky=(N,E,S,W))
-btn_decrypt = Button(root, text="Decrypt", command=decrypt).grid(row=1, column=4, sticky=(N,E,S,W))
 
 # Main loop
 root.mainloop()
