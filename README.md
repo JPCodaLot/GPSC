@@ -1,5 +1,6 @@
 # GPSC
 **General Purpose Substitution Cipher**
+
 A little dialog window to quickly Encrypt and Decrypt text using the Josh-24 cipher.
 
 # How to run:
