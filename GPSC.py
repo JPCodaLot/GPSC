@@ -58,7 +58,7 @@ def open_file(e=False):
         if result == True:
             save()
         info_bar.config(text=("Open file").center(34))
-        filename = filedialog.askopenfilename(initialdir="C:/Users/Harbaughs/Documents/", title="Open", filetypes=(("Encrypted Messages", "*.scme"),("Text Documents", "*.txt"),("All Files", "*.*")))
+        filename = filedialog.askopenfilename(initialdir="C:/Users/Harbaughs/Documents/", title="Open", filetypes=(("Messages", ("*.scme", "*.txt")),("All Files", "*.*")))
         if filename:
             file = open(filename, "r")
             newtext = file.read()
@@ -115,11 +115,21 @@ def save(e=False):
 
 # Undo box
 def undo(e=False):
-    text_box.edit_undo()
+    try:
+        text_box.edit_undo()
+    except TclError:
+        edit_menu.entryconfig(0, state=DISABLED)
+    else:
+        edit_menu.entryconfig(1, state=NORMAL)
 
 # Redo box
 def redo(e=False):
-    text_box.edit_redo()
+    try:
+        text_box.edit_redo()
+    except TclError:
+        edit_menu.entryconfig(1, state=DISABLED)
+    else:
+       edit_menu.entryconfig(0, state=NORMAL)
 
 def cut(e=False):
     if text_box.tag_ranges(SEL):
@@ -242,8 +252,7 @@ def buildCipherBox():
         lb1.delete(0, END)
         key_names = settings.options('keys')
         key_names = [k.upper() for k in key_names]
-        for k in key_names:
-            lb1.insert(1, k)
+        lb1.insert(END, *key_names)
         cipher_drop.config(value=key_names)
     
     def delete():
@@ -279,7 +288,9 @@ def buildCipherBox():
                     break
         settings.set('keys', name, cipher.encode('utf-8').hex())
         refresh()
-        lb1.activate(lb1.get(0, END).index(name))
+        lb1.selection_clear(0, END)
+        lb1.see(END)
+        lb1.selection_set(END)
 
     # Import Button
     importBTN = Button(keywin, text="Import")
@@ -335,13 +346,7 @@ root.bind('<Control-s>', save)
 file_menu.add_command(label="Save As...", command=save_as_file, accelerator="Ctrl+Shift+S")
 root.bind('<Control-S>', save_as_file)
 file_menu.add_separator()
-cipher_submenu = Menu(file_menu, tearoff=0)
-file_menu.add_cascade(label="Cipher Key", menu=cipher_submenu)
-cipher_submenu.add_command(label="Import", command=apply_cipher)
-cipher_submenu.add_command(label="Export Current", command=apply_cipher)
-cipher_submenu.add_command(label="Export All", command=apply_cipher)
-file_menu.add_separator()
-file_menu.add_command(label="Exit", command=root.quit)
+file_menu.add_command(label="Exit", command=root.quit, accelerator="Alt+F4")
 
 # Edit menu
 edit_menu = Menu(menubar, tearoff=0)
@@ -376,9 +381,6 @@ color_submenu = Menu(setting_menu, tearoff=0)
 color_submenu.add_command(label="Background", command=sel_colorBG)
 color_submenu.add_command(label="Forground", command=sel_colorFG)
 setting_menu.add_cascade(label="Color", menu=color_submenu)
-def printfo():
-    print(root.winfo_x(), root.winfo_y())
-setting_menu.add_command(label="More...", command=printfo)
 
 # ==== Dialog Styling ==== #
 
