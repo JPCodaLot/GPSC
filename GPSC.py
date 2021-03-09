@@ -237,15 +237,20 @@ def buildCipherBox():
     keywin.grid_columnconfigure(0, weight=1)
     keywin.grid_columnconfigure(1, weight=1)
     
+    def refresh():
+        update_ini()
+        lb1.delete(0, END)
+        key_names = settings.options('keys')
+        key_names = [k.upper() for k in key_names]
+        for k in key_names:
+            lb1.insert(1, k)
+        cipher_drop.config(value=key_names)
+    
     def delete():
         cersel = lb1.curselection()
         for i in cersel: 
             settings.remove_option("keys", lb1.get(0,END)[i])
-            lb1.delete(i)
-        update_ini()
-        key_names = settings.options('keys')
-        key_names = [k.upper() for k in key_names]
-        cipher_drop.config(value=key_names)
+        refresh()
     
     def generate():
         char_list = sorted(list(printable))[6:]
@@ -273,14 +278,8 @@ def buildCipherBox():
                     name += c
                     break
         settings.set('keys', name, cipher.encode('utf-8').hex())
-        update_ini()
-        lb1.insert(END, name)
-        lb1.selection_clear(0, END)
-        lb1.selection_set(END)
-        lb1.see(END)
-        key_names = settings.options('keys')
-        key_names = [k.upper() for k in key_names]
-        cipher_drop.config(value=key_names)
+        refresh()
+        lb1.activate(lb1.get(0, END).index(name))
 
     # Import Button
     importBTN = Button(keywin, text="Import")
@@ -299,8 +298,7 @@ def buildCipherBox():
     # Create listbox
     lb1 = Listbox(boxframe, activestyle='none', selectmode=MULTIPLE, borderwidth=0)
     lb1.grid(row=0, column=0, sticky=(N,S,E,W))
-    for i in key_names:
-        lb1.insert(1, i)
+    refresh()
     
     # Create scrollbar
     scrollbar = Scrollbar(boxframe)
