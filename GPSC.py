@@ -237,6 +237,16 @@ def buildCipherBox():
     keywin.grid_columnconfigure(0, weight=1)
     keywin.grid_columnconfigure(1, weight=1)
     
+    def delete():
+        cersel = lb1.curselection()
+        for i in cersel: 
+            settings.remove_option("keys", lb1.get(0,END)[i])
+            lb1.delete(i)
+        update_ini()
+        key_names = settings.options('keys')
+        key_names = [k.upper() for k in key_names]
+        cipher_drop.config(value=key_names)
+    
     def generate():
         char_list = sorted(list(printable))[6:]
         shuffle(char_list)
@@ -301,7 +311,7 @@ def buildCipherBox():
     scrollbar.config(command = lb1.yview)
     
     # Delete Button
-    deleteBTN = Button(keywin, text="Delete")
+    deleteBTN = Button(keywin, text="Delete", command=delete)
     deleteBTN.grid(row=3, column=0, sticky=(N,S,E,W), padx=5, pady=5)
     
     # Generate Button
