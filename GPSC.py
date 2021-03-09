@@ -349,5 +349,57 @@ text_box = Text(root, width=60, height=20, padx=4, pady=4, font=("Lucida Console
 text_box.grid(row=1, column=0, columnspan=3, pady=(10,0), sticky=(N,E,S,W))
 text_box.insert(1.0, 'Type in your secret message or\nclick the "Chose file" button to open a extenal file.')
 
+
+# ===== Cipher Toplevel ===== #
+
+def buildCipherBox():
+
+    # Create ciphers toplevel
+    keywin = Toplevel()
+    keywin.title("Ciphers")
+    keywin.iconbitmap('Icon.ico')
+    keywin.minsize(210, 250)
+    keywin.resizable(False, False)
+    keywin.grid_rowconfigure(1, weight=1)
+    keywin.grid_columnconfigure(0, weight=1)
+    keywin.grid_columnconfigure(1, weight=1)
+
+    # Import Button
+    importBTN = Button(keywin, text="Import")
+    importBTN.grid(row=0, column=0, sticky=(N,S,E,W), padx=5, pady=5)
+    
+    # Export Button
+    exportBTN = Button(keywin, text="Export")
+    exportBTN.grid(row=0, column=1, sticky=(N,S,E,W), padx=5, pady=5)
+    
+    # Create Frame
+    boxframe = Frame(keywin, borderwidth=2, relief="sunken")
+    boxframe.grid(row=1, column=0, columnspan=2, sticky=(N,S,E,W), padx=5, pady=5)
+    boxframe.grid_columnconfigure(0, weight=1)
+    boxframe.grid_rowconfigure(0, weight=1)
+    
+    # Create listbox
+    lb1 = Listbox(boxframe, activestyle='none', selectmode=MULTIPLE, borderwidth=0)
+    for i in key_names:
+        lb1.insert(1, i.upper())
+    lb1.grid(row=0, column=0, sticky=(N,S,E,W))
+    
+    # Create scrollbar
+    scrollbar = Scrollbar(boxframe)
+    scrollbar.grid(row=0, column=1, sticky=(N,S,E,W))
+    
+    # Config scrollbar
+    lb1.config(yscrollcommand = scrollbar.set)
+    scrollbar.config(command = lb1.yview)
+    
+    # Delete Button
+    deleteBTN = Button(keywin, text="Delete")
+    deleteBTN.grid(row=3, column=0, sticky=(N,S,E,W), padx=5, pady=5)
+    
+    # Generate Button
+    genBTN = Button(keywin, text="Generate")
+    genBTN.grid(row=3, column=1, sticky=(N,S,E,W), padx=5, pady=5)
+
+
 # Main loop
 root.mainloop()
