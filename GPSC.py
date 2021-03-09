@@ -178,49 +178,15 @@ def apply_cipher(e=False):
         if mesEnc:
             info_bar.config(text=("Decrypted message").center(34))
             button.configure(text="Encrypt")
-            edit_menu.entryconfig(9, label="Encrypt")
-            cipher_menu.config(state='normal')
+            cipher_menu.entryconfig(2, label="Encrypt")
+            cipher_drop.config(state='normal')
             mesEnc = False
         else:
             info_bar.config(text=("Encrypted message").center(34))
             button.configure(text="Decrypt")
-            edit_menu.entryconfig(9, label="Decrypt")
-            cipher_menu.config(state='disabled')
+            cipher_menu.entryconfig(2, label="Decrypt")
+            cipher_drop.config(state='disabled')
             mesEnc = True
-
-def generate(e=False):
-    char_list = sorted(list(printable))[6:]
-    shuffle(char_list)
-    cipher = ''.join(char_list)
-    cipher = ' ' + cipher # Add space at begining
-    name = ''
-    name_len = 5
-    for c in cipher:
-        if name_len > 2:
-            if c.isalpha():
-                name += c.upper()
-                name_len -= 1
-        elif name_len == 2:
-            if c.isalpha():
-                name += c.upper()
-                name += "-"
-                name_len -= 1
-        elif name_len == 1:
-            if c.isnumeric():
-                name += c
-                name_len -= 1
-        elif name_len == 0:
-            if c.isnumeric():
-                name += c
-                break
-    # return (name, cipher,)
-    print(f"Name: {name}")
-    print(f"Cipher: {cipher}")
-    settings.set('keys', name, cipher.encode('utf-8').hex())
-    update_ini()
-    key_names = settings.options('keys')
-    key_names = [k.upper() for k in key_names]
-    cipher_menu.config(value=key_names)
 
 def ptype(event):
     print(event)
@@ -254,7 +220,95 @@ def switch_key(keyname):
         text = text_box.get(1.0, END)[:-1]
         newtext = cipher(False, text, lastUsed)
     current_key.set(keyname)
+
+
+# ===== Cipher Toplevel ===== #
+
+def buildCipherBox():
+
+    # Create ciphers toplevel
+    keywin = Toplevel()
+    keywin.grab_set()
+    keywin.focus_force()
+    keywin.geometry(f'+{root.winfo_x()+20}+{root.winfo_y()+20}')
+    keywin.title("Ciphers")
+    keywin.iconbitmap('Icon.ico')
+    keywin.minsize(210, 250)
+    keywin.resizable(False, False)
+    keywin.grid_rowconfigure(1, weight=1)
+    keywin.grid_columnconfigure(0, weight=1)
+    keywin.grid_columnconfigure(1, weight=1)
     
+    def generate():
+        char_list = sorted(list(printable))[6:]
+        shuffle(char_list)
+        cipher = ''.join(char_list)
+        cipher = ' ' + cipher # Add space at begining
+        name = ''
+        name_len = 5
+        for c in cipher:
+            if name_len > 2:
+                if c.isalpha():
+                    name += c.upper()
+                    name_len -= 1
+            elif name_len == 2:
+                if c.isalpha():
+                    name += c.upper()
+                    name += "-"
+                    name_len -= 1
+            elif name_len == 1:
+                if c.isnumeric():
+                    name += c
+                    name_len -= 1
+            elif name_len == 0:
+                if c.isnumeric():
+                    name += c
+                    break
+        settings.set('keys', name, cipher.encode('utf-8').hex())
+        update_ini()
+        lb1.insert(END, name)
+        lb1.selection_clear(0, END)
+        lb1.selection_set(END)
+        lb1.see(END)
+        key_names = settings.options('keys')
+        key_names = [k.upper() for k in key_names]
+        cipher_drop.config(value=key_names)
+
+    # Import Button
+    importBTN = Button(keywin, text="Import")
+    importBTN.grid(row=0, column=0, sticky=(N,S,E,W), padx=5, pady=5)
+    
+    # Export Button
+    exportBTN = Button(keywin, text="Export")
+    exportBTN.grid(row=0, column=1, sticky=(N,S,E,W), padx=5, pady=5)
+    
+    # Create Frame
+    boxframe = Frame(keywin, borderwidth=2, relief="sunken")
+    boxframe.grid(row=1, column=0, columnspan=2, sticky=(N,S,E,W), padx=5, pady=5)
+    boxframe.grid_columnconfigure(0, weight=1)
+    boxframe.grid_rowconfigure(0, weight=1)
+    
+    # Create listbox
+    lb1 = Listbox(boxframe, activestyle='none', selectmode=MULTIPLE, borderwidth=0)
+    lb1.grid(row=0, column=0, sticky=(N,S,E,W))
+    for i in key_names:
+        lb1.insert(1, i)
+    
+    # Create scrollbar
+    scrollbar = Scrollbar(boxframe)
+    scrollbar.grid(row=0, column=1, sticky=(N,S,E,W))
+    
+    # Config scrollbar
+    lb1.config(yscrollcommand = scrollbar.set)
+    scrollbar.config(command = lb1.yview)
+    
+    # Delete Button
+    deleteBTN = Button(keywin, text="Delete")
+    deleteBTN.grid(row=3, column=0, sticky=(N,S,E,W), padx=5, pady=5)
+    
+    # Generate Button
+    genBTN = Button(keywin, text="Generate", command=generate)
+    genBTN.grid(row=3, column=1, sticky=(N,S,E,W), padx=5, pady=5) 
 
 
 # ==== Menu Bar ==== #
@@ -299,17 +353,15 @@ edit_menu.add_command(label="Paste", command=paste, accelerator="Ctrl+V")
 root.bind('<Control-v>', paste)
 edit_menu.add_command(label="Select All", command=select_all, accelerator="Ctrl+A")
 root.bind('<Control-a>', select_all)
-edit_menu.add_separator()
-edit_menu.add_command(label="Encrypt", command=apply_cipher, accelerator="Ctrl+E")
-root.bind('<Control-e>', apply_cipher)
 
 # Cipher menu
 cipher_menu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Key", menu=cipher_menu)
-cipher_menu.add_command(label="Generate New", command=generate, accelerator="Ctrl+G")
-root.bind('<Control-g>', generate)
-cipher_menu.add_command(label="Delete Current", command=apply_cipher)
-cipher_menu.add_command(label="Delete All", command=apply_cipher)
+menubar.add_cascade(label="Cipher", menu=cipher_menu)
+cipher_menu.add_command(label="Edit Keys", command=buildCipherBox, accelerator="Ctrl+K")
+root.bind('<Control-k>', buildCipherBox)
+cipher_menu.add_separator()
+cipher_menu.add_command(label="Encrypt", command=apply_cipher, accelerator="Ctrl+E")
+root.bind('<Control-e>', apply_cipher)
 
 # Preferences menu
 setting_menu = Menu(menubar, tearoff=0)
@@ -336,9 +388,9 @@ info_bar = Label(root, bg=colorFG, fg=colorBG, text="Only printable characters a
 info_bar.grid(row=0, column=0, sticky=(N,E,S,W))
 
 # Cipher menu
-cipher_menu = ttk.Combobox(root, state="readonly", textvariable=current_key, value=key_names, width=10)
-cipher_menu.bind("<<ComboboxSelected>>", ptype)
-cipher_menu.grid(row=0, column=1, sticky=(N,S), padx=10)
+cipher_drop = ttk.Combobox(root, state="readonly", textvariable=current_key, value=key_names, width=10)
+cipher_drop.bind("<<ComboboxSelected>>", ptype)
+cipher_drop.grid(row=0, column=1, sticky=(N,S), padx=10)
 
 # Cipher button
 button = Button(root, text="Encrypt", padx=15, command=apply_cipher)
@@ -348,57 +400,6 @@ button.grid(row=0, column=2, sticky=(N,S))
 text_box = Text(root, width=60, height=20, padx=4, pady=4, font=("Lucida Console", 10), fg=colorBG, bg=colorFG, selectforeground=colorFG, selectbackground=colorBG, undo=True)
 text_box.grid(row=1, column=0, columnspan=3, pady=(10,0), sticky=(N,E,S,W))
 text_box.insert(1.0, 'Type in your secret message or\nclick the "Chose file" button to open a extenal file.')
-
-
-# ===== Cipher Toplevel ===== #
-
-def buildCipherBox():
-
-    # Create ciphers toplevel
-    keywin = Toplevel()
-    keywin.title("Ciphers")
-    keywin.iconbitmap('Icon.ico')
-    keywin.minsize(210, 250)
-    keywin.resizable(False, False)
-    keywin.grid_rowconfigure(1, weight=1)
-    keywin.grid_columnconfigure(0, weight=1)
-    keywin.grid_columnconfigure(1, weight=1)
-
-    # Import Button
-    importBTN = Button(keywin, text="Import")
-    importBTN.grid(row=0, column=0, sticky=(N,S,E,W), padx=5, pady=5)
-    
-    # Export Button
-    exportBTN = Button(keywin, text="Export")
-    exportBTN.grid(row=0, column=1, sticky=(N,S,E,W), padx=5, pady=5)
-    
-    # Create Frame
-    boxframe = Frame(keywin, borderwidth=2, relief="sunken")
-    boxframe.grid(row=1, column=0, columnspan=2, sticky=(N,S,E,W), padx=5, pady=5)
-    boxframe.grid_columnconfigure(0, weight=1)
-    boxframe.grid_rowconfigure(0, weight=1)
-    
-    # Create listbox
-    lb1 = Listbox(boxframe, activestyle='none', selectmode=MULTIPLE, borderwidth=0)
-    for i in key_names:
-        lb1.insert(1, i.upper())
-    lb1.grid(row=0, column=0, sticky=(N,S,E,W))
-    
-    # Create scrollbar
-    scrollbar = Scrollbar(boxframe)
-    scrollbar.grid(row=0, column=1, sticky=(N,S,E,W))
-    
-    # Config scrollbar
-    lb1.config(yscrollcommand = scrollbar.set)
-    scrollbar.config(command = lb1.yview)
-    
-    # Delete Button
-    deleteBTN = Button(keywin, text="Delete")
-    deleteBTN.grid(row=3, column=0, sticky=(N,S,E,W), padx=5, pady=5)
-    
-    # Generate Button
-    genBTN = Button(keywin, text="Generate")
-    genBTN.grid(row=3, column=1, sticky=(N,S,E,W), padx=5, pady=5)
 
 
 # Main loop
