@@ -6,7 +6,7 @@ from random import shuffle
 import configparser
 import os
 
-# Create Window 
+# Create Window
 root = Tk()
 root.eval('tk::PlaceWindow . center')
 root.minsize(500, 250)
@@ -34,7 +34,7 @@ def update_ini():
     settings.write(file)
     file.close()
 
-# New file 
+# New file
 def new(e=False):
     global filesave
     result = messagebox.askyesnocancel("Save Changes", "Do you want to save your changes?")
@@ -79,7 +79,7 @@ def open_file(e=False):
         else:
             info_bar.config(text=("Canceled open file").center(34))
 
-# Save as file      
+# Save as file
 def save_as_file(e=False):
     global filesave
     if mesEnc:
@@ -136,18 +136,18 @@ def cut(e=False):
         root.clipboard_clear()
         root.clipboard_append(text_box.selection_get())
         text_box.delete("sel.first", "sel.last")
-    
+
 def copy(e=False):
     if text_box.tag_ranges(SEL):
         root.clipboard_clear()
         root.clipboard_append(text_box.selection_get())
-    
+
 def paste(e=False):
     if not e: # Check if its a keyboard event
         if text_box.tag_ranges(SEL):
             text_box.delete("sel.first", "sel.last")
         text_box.insert(text_box.index(INSERT), root.clipboard_get())
-   
+
 def select_all(e=False):
     text_box.focus_set()
     text_box.tag_add(SEL, 1.0, END)
@@ -175,7 +175,7 @@ def cipher(encipher, text, keyname):
         messagebox.showerror("Encipherment Error", f"The text contains the folowing unsuported characters:\n{invaidChars}.\n Please remove them before trying again.")
         return false
     else:
-        return newtext  
+        return newtext
 
 # Ciper operation
 def apply_cipher(e=False):
@@ -201,7 +201,7 @@ def apply_cipher(e=False):
 def ptype(event):
     type = cipher_drop.get()
     info_bar.config(text=f'Set cipher key to {type}'.center(34))
-    
+
 def sel_colorBG():
     global colorBG
     colorBG = colorchooser.askcolor(title ="Choose Background Color")[1]
@@ -210,7 +210,7 @@ def sel_colorBG():
     info_bar.config(fg=colorBG)
     text_box.config(fg=colorBG, selectbackground=colorBG)
     update_ini()
-    
+
 def sel_colorFG():
     global colorFG
     colorFG = colorchooser.askcolor(title ="Choose Forground Color")[1]
@@ -218,7 +218,7 @@ def sel_colorFG():
     info_bar.config(bg=colorFG)
     text_box.config(bg=colorFG, selectforeground=colorFG)
     update_ini()
-    
+
 def switch_key(keyname):
     global mesEnc
     key_names = settings.options('keys')
@@ -232,7 +232,7 @@ def switch_key(keyname):
 
 # ===== Cipher Toplevel ===== #
 
-def buildCipherBox():
+def buildCipherBox(e=False):
 
     # Create ciphers toplevel
     keywin = Toplevel()
@@ -246,7 +246,7 @@ def buildCipherBox():
     keywin.grid_rowconfigure(1, weight=1)
     keywin.grid_columnconfigure(0, weight=1)
     keywin.grid_columnconfigure(1, weight=1)
-    
+
     def refresh():
         update_ini()
         lb1.delete(0, END)
@@ -254,13 +254,13 @@ def buildCipherBox():
         key_names = [k.upper() for k in key_names]
         lb1.insert(END, *key_names)
         cipher_drop.config(value=key_names)
-    
+
     def delete():
         cersel = lb1.curselection()
-        for i in cersel: 
+        for i in cersel:
             settings.remove_option("keys", lb1.get(0,END)[i])
         refresh()
-    
+
     def generate():
         char_list = sorted(list(printable))[6:]
         shuffle(char_list)
@@ -295,37 +295,37 @@ def buildCipherBox():
     # Import Button
     importBTN = Button(keywin, text="Import")
     importBTN.grid(row=0, column=0, sticky=(N,S,E,W), padx=5, pady=5)
-    
+
     # Export Button
     exportBTN = Button(keywin, text="Export")
     exportBTN.grid(row=0, column=1, sticky=(N,S,E,W), padx=5, pady=5)
-    
+
     # Create Frame
     boxframe = Frame(keywin, borderwidth=2, relief="sunken")
     boxframe.grid(row=1, column=0, columnspan=2, sticky=(N,S,E,W), padx=5, pady=5)
     boxframe.grid_columnconfigure(0, weight=1)
     boxframe.grid_rowconfigure(0, weight=1)
-    
+
     # Create listbox
     lb1 = Listbox(boxframe, activestyle='none', selectmode=MULTIPLE, borderwidth=0)
     lb1.grid(row=0, column=0, sticky=(N,S,E,W))
     refresh()
-    
+
     # Create scrollbar
     scrollbar = Scrollbar(boxframe)
     scrollbar.grid(row=0, column=1, sticky=(N,S,E,W))
-    
+
     # Config scrollbar
     lb1.config(yscrollcommand = scrollbar.set)
     scrollbar.config(command = lb1.yview)
-    
+
     # Delete Button
     deleteBTN = Button(keywin, text="Delete", command=delete)
     deleteBTN.grid(row=3, column=0, sticky=(N,S,E,W), padx=5, pady=5)
-    
+
     # Generate Button
     genBTN = Button(keywin, text="Generate", command=generate)
-    genBTN.grid(row=3, column=1, sticky=(N,S,E,W), padx=5, pady=5) 
+    genBTN.grid(row=3, column=1, sticky=(N,S,E,W), padx=5, pady=5)
 
 
 # ==== Menu Bar ==== #
