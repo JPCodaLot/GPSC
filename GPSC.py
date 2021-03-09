@@ -189,10 +189,8 @@ def apply_cipher(e=False):
             mesEnc = True
 
 def ptype(event):
-    print(event)
-    type = cipher_menu.get()
-    info_bar.config(text=type.center(34))
-    messagebox.showinfo("Python Cipher", f"Set cipher to {type}")
+    type = cipher_drop.get()
+    info_bar.config(text=f'Set cipher key to {type}'.center(34))
     
 def sel_colorBG():
     global colorBG
@@ -387,7 +385,7 @@ root.rowconfigure(1, weight=1)
 info_bar = Label(root, bg=colorFG, fg=colorBG, text="Only printable characters allowed!")
 info_bar.grid(row=0, column=0, sticky=(N,E,S,W))
 
-# Cipher menu
+# Cipher dropdown
 cipher_drop = ttk.Combobox(root, state="readonly", textvariable=current_key, value=key_names, width=10)
 cipher_drop.bind("<<ComboboxSelected>>", ptype)
 cipher_drop.grid(row=0, column=1, sticky=(N,S), padx=10)
