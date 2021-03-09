@@ -68,13 +68,13 @@ def open_file(e=False):
             filesave = filename
             if os.path.splitext(filename)[1] == ".scme":
                 button.configure(text="Decrypt")
-                edit_menu.entryconfig(3, label="Decrypt")
-                cipher_menu.config(state='disabled')
+                cipher_menu.entryconfig(3, label="Decrypt")
+                cipher_drop.config(state='disabled')
                 mesEnc = True
             else:
                 button.configure(text="Encrypt")
-                edit_menu.entryconfig(3, label="Encrypt")
-                cipher_menu.config(state='normal')
+                cipher_menu.entryconfig(3, label="Encrypt")
+                cipher_drop.config(state='normal')
                 mesEnc = False
         else:
             info_bar.config(text=("Canceled open file").center(34))
