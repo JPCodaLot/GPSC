@@ -4,7 +4,19 @@ from tkinter import filedialog, ttk, messagebox, colorchooser
 from string import printable
 from random import shuffle
 import configparser
-import os
+import json
+from os import path as os_path
+from os import rename as os_rename
+
+# Create appinfo dict
+appinfo = {
+    "name":"GPSC",
+    "version":{
+        "major":2,
+        "minor":0,
+        "patch":0
+    }
+}
 
 # Create Window
 root = Tk()
@@ -66,7 +78,7 @@ def open_file(e=False):
             text_box.delete(1.0, END)
             text_box.insert(END, newtext)
             filesave = filename
-            if os.path.splitext(filename)[1] == ".scme":
+            if os_path.splitext(filename)[1] == ".scme":
                 button.configure(text="Decrypt")
                 cipher_menu.entryconfig(3, label="Decrypt")
                 cipher_drop.config(state='disabled')
@@ -101,10 +113,10 @@ def save(e=False):
     global mesEnc
     if filesave:
         if mesEnc:
-            filename = os.path.splitext(filesave)[0] + ".scme"
+            filename = os_path.splitext(filesave)[0] + ".scme"
         else:
-            filename = os.path.splitext(filesave)[0] + ".txt"
-        os.rename(filesave, filename)
+            filename = os_path.splitext(filesave)[0] + ".txt"
+        os_rename(filesave, filename)
         filesave = filename
         file = open(filesave, "w")
         file.write(text_box.get(1.0, END)[:-1])
@@ -247,6 +259,35 @@ def buildCipherBox(e=False):
     keywin.grid_columnconfigure(0, weight=1)
     keywin.grid_columnconfigure(1, weight=1)
 
+    def importKeys():
+        global appinfo
+        filename = filedialog.askopenfilename(initialdir="/", title="Import Cipher Keys", filetypes=(("Cipher Keys", ("*.sckj",)),))
+        if filename:
+            file = open(filename, "r")
+            sckj = json.loads(file.read())
+            file.close()
+            if sckj["app"]["name"] != appinfo["name"]:
+                messagebox.showerror("Import Error", "Incorect File Type!")
+            elif sckj["datatype"] != "Susitution Cipher Keys":
+                messagebox.showerror("Import Error", "Incorect File Type!")
+            elif sckj["app"]["version"]["major"] > appinfo["version"]["major"]:
+                ver = sckj["app"]["version"]
+                messagebox.showerror("Import Error", f'You need version {ver["major"]}.{ver["minor"]}.{ver["patch"]} to open these keys!')
+            elif sckj["app"]["version"]["major"] < appinfo["version"]["major"]:
+                messagebox.showerror("Import Error", "These keys were made in a earlier version and can not be opened!")
+            else:
+                listend = lb1.size()
+                for k, v in sckj["data"].items():
+                    settings.set('keys', k, v)
+                refresh()
+                lb1.selection_clear(0, END)
+                lb1.see(listend)
+                lb1.selection_set(listend, END)
+                messagebox.showinfo("Import", "The keys were successfully imported.")
+
+    def exportKeys():
+        pass
+
     def refresh():
         update_ini()
         lb1.delete(0, END)
@@ -257,9 +298,13 @@ def buildCipherBox(e=False):
 
     def delete():
         cersel = lb1.curselection()
-        for i in cersel:
-            settings.remove_option("keys", lb1.get(0,END)[i])
-        refresh()
+        sellen = len(cersel)
+        if sellen > 0:
+            result = messagebox.askyesnocancel("Delete Comfiration", f"Are you sure you want to delete {f'these {sellen} keys' if sellen > 1 else 'this key'}?")
+            if result == True:
+                for i in cersel:
+                    settings.remove_option("keys", lb1.get(0,END)[i])
+                refresh()
 
     def generate():
         char_list = sorted(list(printable))[6:]
@@ -293,11 +338,11 @@ def buildCipherBox(e=False):
         lb1.selection_set(END)
 
     # Import Button
-    importBTN = Button(keywin, text="Import")
+    importBTN = Button(keywin, text="Import", command=importKeys)
     importBTN.grid(row=0, column=0, sticky=(N,S,E,W), padx=5, pady=5)
 
     # Export Button
-    exportBTN = Button(keywin, text="Export")
+    exportBTN = Button(keywin, text="Export", command=exportKeys)
     exportBTN.grid(row=0, column=1, sticky=(N,S,E,W), padx=5, pady=5)
 
     # Create Frame
