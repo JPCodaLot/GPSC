@@ -1,0 +1,14 @@
+{
+  "app": {
+    "name": "GPSC",
+    "version": {
+      "major": 2,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "datatype": "General Susitution Cipher Message",
+  "key": "JOSH-24",
+  "state": "encrypted",
+  "data": "|+2i# KPD cPV D!Lir A}{Bu\ny5 +PH5 e+2e KPD ZL#5 Le\n,!5 Le GL!5ZKC\n4 |+5 {2Lie 7!LaPV5 }VPrV2))5V!"
+}
