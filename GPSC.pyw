@@ -5,8 +5,6 @@ from string import printable
 from random import shuffle
 import configparser
 import json
-from os import path as os_path
-from os import rename as os_rename
 
 # Create appinfo dict
 appinfo = {
@@ -62,23 +60,58 @@ def new(e=False):
 
 # Open file
 def open_file(e=False):
+
+    # Get Globals
     global filesave
     global mesEnc
-    info_bar.config(text=("Open file").center(34))
+    
+    # Save Changes
     result = messagebox.askyesnocancel("Save Changes", "Do you want to save your changes?")
-    if result != None:
-        if result == True:
-            save()
-        info_bar.config(text=("Open file").center(34))
-        filename = filedialog.askopenfilename(initialdir="documents", title="Open", filetypes=(("Messages", "*.gscm"),("Text Documents", "*.txt")))
-        if filename:
-            file = open(filename, "r")
-            newtext = file.read()
-            file.close()
+    if result == None:
+        return False
+    elif result == True:
+        save()
+   
+    # Read File
+    info_bar.config(text=("Open file").center(34))
+    filename = filedialog.askopenfilename(initialdir="documents", title="Open", filetypes=(("Messages", "*.gscm"),))
+    if not filename:
+        info_bar.config(text=("Canceled open file").center(34))
+        return False
+    file = open(filename, "r")
+    gscm = json.loads(file.read())
+    file.close()
+    
+    # Test For vailidity
+    try:
+        if gscm["app"]["name"] != appinfo["name"]:
+            messagebox.showerror("Import Error", "Incorect File Type! ID#1")
+        elif gscm["datatype"] != "General Susitution Cipher Message":
+            messagebox.showerror("Import Error", "Incorect File Type! ID#2")
+        elif gscm["app"]["version"]["major"] > appinfo["version"]["major"]:
+            ver = gscm["app"]["version"]
+            messagebox.showerror("Import Error", f'You need version {ver["major"]}.{ver["minor"]}.{ver["patch"]} to open this message!')
+        elif gscm["app"]["version"]["major"] < appinfo["version"]["major"]:
+            messagebox.showerror("Import Error", "This message was made in a earlier version and can not be opened!")
+        else:
+            
+            # Look for key
+            cipher_drop.config(state='readonly')
+            if gscm["state"] == "encrypted":
+                if settings.has_option("keys", gscm["key"]):
+                    current_key.set(gscm["key"].upper())
+                    cipher_drop.config(state='disabled')
+                else:
+                    result = messagebox.askyesnocancel("Message Key", "You do not have the key that this message was encrypted in. Would you like to open it anyways?")
+                    if result != True:
+                        info_bar.config(text=("Canceled open file").center(34))
+                        return False
+
+            # Insert File
             text_box.delete(1.0, END)
-            text_box.insert(END, newtext)
+            text_box.insert(END, gscm["data"])
             filesave = filename
-            if os_path.splitext(filename)[1] == ".gsck":
+            if gscm["state"] == "encrypted":
                 button.configure(text="Decrypt")
                 cipher_menu.entryconfig(3, label="Decrypt")
                 mesEnc = True
@@ -86,14 +119,14 @@ def open_file(e=False):
                 button.configure(text="Encrypt")
                 cipher_menu.entryconfig(3, label="Encrypt")
                 mesEnc = False
-            cipher_drop.config(state='normal')
-        else:
-            info_bar.config(text=("Canceled open file").center(34))
+            info_bar.config(text=("Opened file").center(34))
+    except KeyError:
+        messagebox.showerror("Import Error", "Incorect File Type! ID#3")
 
 # Save as file
 def save_as_file(e=False):
     global filesave
-    filename = filedialog.asksaveasfilename(defaultextension=".gscm", initialdir="documents", title="Save As", filetypes=(("Encrypted Messages", "*.gscm"),("Text Documents", "*.txt")))
+    filename = filedialog.asksaveasfilename(defaultextension=".gscm", initialdir="documents", title="Save As", filetypes=(("Encrypted Messages", "*.gscm"),))
     if filename:
         filesave = filename
         save()
@@ -105,14 +138,16 @@ def save(e=False):
     global filesave
     global mesEnc
     if filesave:
-        if mesEnc:
-            filename = os_path.splitext(filesave)[0] + ".gscm"
-        else:
-            filename = os_path.splitext(filesave)[0] + ".txt"
-        os_rename(filesave, filename)
-        filesave = filename
         file = open(filesave, "w")
-        file.write(text_box.get(1.0, END)[:-1])
+        pydict = {
+            "app":appinfo,
+            "datatype":"General Susitution Cipher Message",
+            "key":current_key.get(),
+            "state":"encrypted" if mesEnc else "normal",
+            "data":text_box.get(1.0, END)[:-1]
+        }
+        sckj = json.dumps(pydict, indent=2) + "\n"
+        file.write(sckj)
         file.close()
         info_bar.config(text=("Saved file").center(34))
     else:
@@ -194,7 +229,7 @@ def apply_cipher(e=False):
             info_bar.config(text=("Decrypted message").center(34))
             button.configure(text="Encrypt")
             cipher_menu.entryconfig(2, label="Encrypt")
-            cipher_drop.config(state='normal')
+            cipher_drop.config(state='readonly')
             mesEnc = False
         else:
             info_bar.config(text=("Encrypted message").center(34))
@@ -254,7 +289,7 @@ def buildCipherBox(e=False):
 
     def importKeys():
         global appinfo
-        filename = filedialog.askopenfilename(initialdir="documents", title="Import Cipher Keys", filetypes=(("Cipher Keys", ("*.gsck",)),))
+        filename = filedialog.askopenfilename(initialdir="documents", title="Import Cipher Keys", filetypes=(("Cipher Keys", "*.gsck"),))
         if filename:
             file = open(filename, "r")
             sckj = json.loads(file.read())
@@ -279,7 +314,7 @@ def buildCipherBox(e=False):
                 messagebox.showinfo("Import", "The keys were successfully imported.")
 
     def exportKeys():
-        filename = filedialog.asksaveasfilename(defaultextension=".gsck", initialdir="documents", title="Save As", filetypes=(("Cipher Keys File", ("*.gsck",)),))
+        filename = filedialog.asksaveasfilename(defaultextension=".gsck", initialdir="documents", title="Save As", filetypes=(("Cipher Keys File", "*.gsck"),))
         if filename:
             file = open(filename, "w")
             pydict = {
@@ -307,7 +342,10 @@ def buildCipherBox(e=False):
             result = messagebox.askyesnocancel("Delete Comfiration", f"Are you sure you want to delete {f'these {sellen} keys' if sellen > 1 else 'this key'}?")
             if result == True:
                 for i in cersel:
-                    settings.remove_option("keys", lb1.get(0,END)[i])
+                    key_name = lb1.get(0,END)[i]
+                    if mesEnc and key_name == current_key.get():
+                        apply_cipher()
+                    settings.remove_option("keys", key_name)
                 if sellen == lb1.size():
                     default = settings.items("default-keys")[0]
                     settings.set("keys", default[0], default[1])
