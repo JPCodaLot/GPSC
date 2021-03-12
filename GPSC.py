@@ -57,7 +57,7 @@ def new(e=False):
         info_bar.config(text=("New message").center(34))
         filesave = ""
         button.configure(text="Encrypt")
-        edit_menu.entryconfig(3, label="Encrypt")
+        cipher_menu.entryconfig(3, label="Encrypt")
         mesEnc = False
 
 # Open file
@@ -81,13 +81,12 @@ def open_file(e=False):
             if os_path.splitext(filename)[1] == ".scme":
                 button.configure(text="Decrypt")
                 cipher_menu.entryconfig(3, label="Decrypt")
-                cipher_drop.config(state='disabled')
                 mesEnc = True
             else:
                 button.configure(text="Encrypt")
                 cipher_menu.entryconfig(3, label="Encrypt")
-                cipher_drop.config(state='normal')
                 mesEnc = False
+            cipher_drop.config(state='normal')
         else:
             info_bar.config(text=("Canceled open file").center(34))
 
@@ -286,7 +285,17 @@ def buildCipherBox(e=False):
                 messagebox.showinfo("Import", "The keys were successfully imported.")
 
     def exportKeys():
-        pass
+        filename = filedialog.asksaveasfilename(defaultextension=".scme", initialdir="/", title="Save As", filetypes=(("Cipher Keys File", ("*.sckj",)),))
+        if filename:
+            file = open(filename, "w")
+            pydict = {
+                "app":appinfo,
+                "datatype":"Susitution Cipher Keys",
+                "data":dict(settings.items("keys"))
+            }
+            sckj = json.dumps(pydict, indent=2) + "\n"
+            file.write(sckj)
+            file.close()
 
     def refresh():
         update_ini()
@@ -295,6 +304,7 @@ def buildCipherBox(e=False):
         key_names = [k.upper() for k in key_names]
         lb1.insert(END, *key_names)
         cipher_drop.config(value=key_names)
+        current_key.set(key_names[0])
 
     def delete():
         cersel = lb1.curselection()
@@ -304,6 +314,9 @@ def buildCipherBox(e=False):
             if result == True:
                 for i in cersel:
                     settings.remove_option("keys", lb1.get(0,END)[i])
+                if sellen == lb1.size():
+                    default = settings.items("default-keys")[0]
+                    settings.set("keys", default[0], default[1])
                 refresh()
 
     def generate():
@@ -424,7 +437,7 @@ setting_menu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Preferences", menu=setting_menu)
 color_submenu = Menu(setting_menu, tearoff=0)
 color_submenu.add_command(label="Background", command=sel_colorBG)
-color_submenu.add_command(label="Forground", command=sel_colorFG)
+color_submenu.add_command(label="Foreground", command=sel_colorFG)
 setting_menu.add_cascade(label="Color", menu=color_submenu)
 
 # ==== Dialog Styling ==== #
