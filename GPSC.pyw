@@ -70,7 +70,7 @@ def open_file(e=False):
         if result == True:
             save()
         info_bar.config(text=("Open file").center(34))
-        filename = filedialog.askopenfilename(initialdir="C:/Users/Harbaughs/Documents/", title="Open", filetypes=(("Messages", ("*.scme", "*.txt")),("All Files", "*.*")))
+        filename = filedialog.askopenfilename(initialdir="documents", title="Open", filetypes=(("Messages", "*.gscm"),("Text Documents", "*.txt")))
         if filename:
             file = open(filename, "r")
             newtext = file.read()
@@ -78,7 +78,7 @@ def open_file(e=False):
             text_box.delete(1.0, END)
             text_box.insert(END, newtext)
             filesave = filename
-            if os_path.splitext(filename)[1] == ".scme":
+            if os_path.splitext(filename)[1] == ".gsck":
                 button.configure(text="Decrypt")
                 cipher_menu.entryconfig(3, label="Decrypt")
                 mesEnc = True
@@ -93,16 +93,10 @@ def open_file(e=False):
 # Save as file
 def save_as_file(e=False):
     global filesave
-    if mesEnc:
-        filename = filedialog.asksaveasfilename(defaultextension=".scme", initialdir="C:/Users/Harbaughs/Documents/", title="Save As", filetypes=(("Encrypted Messages", "*.scme"),("All Files", "*.*")))
-    else:
-        filename = filedialog.asksaveasfilename(defaultextension=".txt", initialdir="C:/Users/Harbaughs/Documents/", title="Save As", filetypes=(("Text Documents", "*.txt"),("All Files", "*.*")))
+    filename = filedialog.asksaveasfilename(defaultextension=".gscm", initialdir="documents", title="Save As", filetypes=(("Encrypted Messages", "*.gscm"),("Text Documents", "*.txt")))
     if filename:
-        file = open(filename, "w")
-        file.write(text_box.get(1.0, END)[:-1])
-        file.close()
-        info_bar.config(text=("Saved file").center(34))
         filesave = filename
+        save()
     else:
         info_bar.config(text=("Canceled save file").center(34))
 
@@ -112,7 +106,7 @@ def save(e=False):
     global mesEnc
     if filesave:
         if mesEnc:
-            filename = os_path.splitext(filesave)[0] + ".scme"
+            filename = os_path.splitext(filesave)[0] + ".gscm"
         else:
             filename = os_path.splitext(filesave)[0] + ".txt"
         os_rename(filesave, filename)
@@ -260,7 +254,7 @@ def buildCipherBox(e=False):
 
     def importKeys():
         global appinfo
-        filename = filedialog.askopenfilename(initialdir="/", title="Import Cipher Keys", filetypes=(("Cipher Keys", ("*.sckj",)),))
+        filename = filedialog.askopenfilename(initialdir="documents", title="Import Cipher Keys", filetypes=(("Cipher Keys", ("*.gsck",)),))
         if filename:
             file = open(filename, "r")
             sckj = json.loads(file.read())
@@ -285,7 +279,7 @@ def buildCipherBox(e=False):
                 messagebox.showinfo("Import", "The keys were successfully imported.")
 
     def exportKeys():
-        filename = filedialog.asksaveasfilename(defaultextension=".scme", initialdir="/", title="Save As", filetypes=(("Cipher Keys File", ("*.sckj",)),))
+        filename = filedialog.asksaveasfilename(defaultextension=".gsck", initialdir="documents", title="Save As", filetypes=(("Cipher Keys File", ("*.gsck",)),))
         if filename:
             file = open(filename, "w")
             pydict = {
