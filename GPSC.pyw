@@ -12,15 +12,16 @@ appinfo = {
     "version":{
         "major":2,
         "minor":0,
-        "patch":0
+        "patch":1
     }
 }
+appTitle = f"{appinfo['name']} v{appinfo['version']['major']}.{appinfo['version']['minor']}.{appinfo['version']['patch']}"
 
 # Create Window
 root = Tk()
 root.eval('tk::PlaceWindow . center')
 root.minsize(500, 250)
-root.title("General Purpose Substitution Cipher 3.0")
+root.title(appTitle)
 root.iconbitmap('Icon.ico')
 
 # Read Settings
